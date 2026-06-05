@@ -6,16 +6,17 @@ import java.util.Map;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.ControllerAdvice;
+import org.springframework.http.converter.HttpMessageNotWritableException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
-import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
+import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.servlet.NoHandlerFoundException;
 
+import com.jesusbeb.springboot.error.springboot_error.exceptions.UserNotFoundException;
 import com.jesusbeb.springboot.error.springboot_error.models.Error;
 
-// @ControllerAdvice es un controlador que no esta mapeado a una ruta, sino que se encarga de manejar las excepciones que ocurren en los controladores de la aplicación.
-@ControllerAdvice
+// @RestControllerAdvice es una anotación que se utiliza para manejar las excepciones de forma global en toda la aplicación, siempre y cuando se indique el tipo de excepción que se va a manejar con la anotación @ExceptionHandler.
+@RestControllerAdvice
 public class HandlerExceptionController {
 
     // @ExceptionHandler es una anotación que se le indica el tipo de excepción que se va a manejar
@@ -34,15 +35,33 @@ public class HandlerExceptionController {
     }
 
         // @ResponseStatus se le indica el estado HTTP que se va a devolver al cliente: INTERNAL_SERVER_ERROR (500). Esto porque no se indica el estado HTTP en el ResponseEntity, sino que se indica en la anotación.
-        // @ResponseBody es una anotación que se le indica que el valor que se va a devolver al cliente es un objeto JSON, cuya informacion en este caso esta dentro de un Map<String, Object>.
+        // Se utiliza un Map para devolver la información del error, en lugar de un objeto de tipo Error. Esto es para mostrar que se pueden personalizar las respuestas de error de diferentes formas.
         @ExceptionHandler(NumberFormatException.class)
         @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
-        @ResponseBody
         public Map<String, Object> numberFormatException(Exception ex) {
             
             Map<String, Object> errorMap = new HashMap<>();
             errorMap.put("date", new Date());
             errorMap.put("error", "Formato de numero no valido!!!");
+            errorMap.put("message", ex.getMessage());
+            errorMap.put("status", HttpStatus.INTERNAL_SERVER_ERROR.value());
+
+            return errorMap;
+        }
+
+        // NullPointerException es una excepcion que se lanza cuando se intenta acceder a un objeto que no ha sido inicializado, o que ha sido inicializado con null. 
+        // HttpMessageNotWritableException es una excepcion que se lanza cuando se intenta escribir un mensaje HTTP que no se puede escribir, como por ejemplo un usuario que no tiene un rol asignado y se intenta acceder a su rol. 
+        // UserNotFoundException es una excepcion personalizada que se lanza cuando se intenta acceder a un usuario que no existe en la base de datos.
+        // Al manejar UserNotFoundException, se puede prescindir de manejar NullPointerException, ya que si se lanza una excepcion de tipo NullPointerException, es porque se ha intentado acceder a un usuario que no existe.
+        @ExceptionHandler({NullPointerException.class, 
+            HttpMessageNotWritableException.class, 
+            UserNotFoundException.class})
+        @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
+        public Map<String, Object> userNotFoundException(Exception ex) {
+            
+            Map<String, Object> errorMap = new HashMap<>();
+            errorMap.put("date", new Date());
+            errorMap.put("error", "El usuario o role no existe!!!");
             errorMap.put("message", ex.getMessage());
             errorMap.put("status", HttpStatus.INTERNAL_SERVER_ERROR.value());
 
