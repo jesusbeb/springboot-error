@@ -1,11 +1,15 @@
 package com.jesusbeb.springboot.error.springboot_error.controllers;
 
 import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.servlet.NoHandlerFoundException;
 
 import com.jesusbeb.springboot.error.springboot_error.models.Error;
@@ -29,6 +33,22 @@ public class HandlerExceptionController {
         return ResponseEntity.internalServerError().body(error);
     }
 
+        // @ResponseStatus se le indica el estado HTTP que se va a devolver al cliente: INTERNAL_SERVER_ERROR (500). Esto porque no se indica el estado HTTP en el ResponseEntity, sino que se indica en la anotación.
+        // @ResponseBody es una anotación que se le indica que el valor que se va a devolver al cliente es un objeto JSON, cuya informacion en este caso esta dentro de un Map<String, Object>.
+        @ExceptionHandler(NumberFormatException.class)
+        @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
+        @ResponseBody
+        public Map<String, Object> numberFormatException(Exception ex) {
+            
+            Map<String, Object> errorMap = new HashMap<>();
+            errorMap.put("date", new Date());
+            errorMap.put("error", "Formato de numero no valido!!!");
+            errorMap.put("message", ex.getMessage());
+            errorMap.put("status", HttpStatus.INTERNAL_SERVER_ERROR.value());
+
+            return errorMap;
+        }
+
     @ExceptionHandler(NoHandlerFoundException.class)
     public ResponseEntity<Error> notFoundEx(NoHandlerFoundException e) {
         Error error = new Error();
@@ -39,5 +59,7 @@ public class HandlerExceptionController {
 
         return ResponseEntity.status(404).body(error);
     }
+
+
 
 }
