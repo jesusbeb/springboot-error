@@ -2,6 +2,7 @@ package com.jesusbeb.springboot.error.springboot_error.services;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.stereotype.Service;
 
@@ -30,7 +31,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public User findById(Long id) {
+    public Optional<User> findById(Long id) {
         User user = null;
         for (User u : users) {
             if (u.getId().equals(id)) {
@@ -38,7 +39,7 @@ public class UserServiceImpl implements UserService {
                 break;
             }
         }
-        return user;
+        return Optional.ofNullable(user); // ofNullable se utiliza para crear un Optional a partir de un valor que puede ser null, en este caso se retorna el usuario encontrado o null si no se encuentra.
     }
 
 

@@ -29,11 +29,9 @@ public class AppController {
 
     @GetMapping("/show/{id}")
     public User show(@PathVariable Long id) {
-        User user = userService.findById(id);
-        // Si el usuario no existe, se lanza una excepcion personalizada UserNotFoundException y se envia el mensaje de error.
-        if (user == null) {
-            throw new UserNotFoundException("El usuario no existe!!!");
-        }
+        // orElseThrow se utiliza para lanzar una excepcion personalizada cuando el usuario no se encuentra en la BD en este caso se lanza una excepcion de tipo UserNotFoundException con un mensaje personalizado.
+        User user = userService.findById(id).orElseThrow(() -> new UserNotFoundException("El usuario no existe!!!"));
+  
         System.out.println(user.getName());
         return user;
     }
